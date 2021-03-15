@@ -22,7 +22,7 @@ def handle_page(url, num):
     status, response = http.request(url)
     for row in BeautifulSoup(response, "html.parser"):
         content += str(row) + "\n"
-    with open("texts.txt", "a") as texts:
+    with open("../texts.txt", "a") as texts:
         texts.write(content)
         texts.write("")
     with zipfile.ZipFile('archive.zip', 'a') as zipped_f:
