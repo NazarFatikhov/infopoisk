@@ -17,16 +17,10 @@ def handle_page(url, num):
     with open("index.txt", "a") as index:
         index.write("{} - {}\n".format(str(num), url))
 
-    # Добавляем контент страницы в файл texts.txt с пустой строкой в конце и добавляем txt файл в архив
-    content = ""
+    # Добавляем страницу в архив
     status, response = http.request(url)
-    for row in BeautifulSoup(response, "html.parser"):
-        content += str(row) + "\n"
-    with open("../texts.txt", "a") as texts:
-        texts.write(content)
-        texts.write("")
     with zipfile.ZipFile('archive.zip', 'a') as zipped_f:
-        zipped_f.writestr("file_{}.html".format(num), content)
+        zipped_f.writestr("file_{}.html".format(num), response)
 
 
 urls = ["https://ru.wikipedia.org/"]
