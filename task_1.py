@@ -26,7 +26,7 @@ def handle_page(url, num):
         texts.write(content)
         texts.write("")
     with zipfile.ZipFile('archive.zip', 'a') as zipped_f:
-        zipped_f.writestr("file_{}.txt".format(num), content)
+        zipped_f.writestr("file_{}.html".format(num), content)
 
 
 urls = ["https://ru.wikipedia.org/"]
