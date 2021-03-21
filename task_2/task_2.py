@@ -1,52 +1,9 @@
 import zipfile
 import nltk
-import string
 import pymorphy2
-import re
 
 from bs4 import BeautifulSoup
-from nltk.corpus import stopwords
-from utils import camel_case_split
-
-def has_cyrillic(text):
-    return bool(re.search('[а-яА-ЯёЁ]', text))
-
-def has_english(text):
-    return bool(re.search('[a-zA-Z]', text))
-
-def split_camel_case(tokens):
-    splited = []
-    added = []
-
-    for token in tokens:
-        words = camel_case_split(token)
-        if len(words) > 0:
-            splited.append(token)
-            added.extend(words)
-
-    tokens -= set(splited)
-    tokens |= set(added)
-    return tokens
-
-def exclude_numeric(tokens):
-    num = [str(i) for i in range(10)]
-    return set([token for token in tokens if all(not j in num for j in token)])
-
-def exclude_stop_words(tokens):
-    stop_words = stopwords.words('russian')
-    stop_words.extend(['что', 'это', 'так', 'вот', 'быть', 'как', 'в', '—', 'к', 'на', 'o'])
-    stop_words.extend(stopwords.words('english'))
-    return set([token for token in tokens if token not in stop_words])
-
-def exclude_punctuation(tokens):
-    return set([token for token in tokens if all(not j in string.punctuation for j in token)])
-
-def exclude_trash(tokens):
-    trash = ['«', '»', '→', '·', '®', '▼', '–', '▸', 'x', 'X', '𗼇']
-    return set([token for token in tokens if token not in trash])
-
-def exclude_not_russion_or_english(tokens):
-    return set([token for token in tokens if (has_cyrillic(token) or has_english(token))])
+from filters import filter_tokens
 
 def lemmatization(tokenization_result):
     morph = pymorphy2.MorphAnalyzer()
@@ -88,12 +45,7 @@ for file in archive.filelist:
     html = archive.open(file.filename)
     text = BeautifulSoup(html, features="html.parser").get_text()
     file_tokens = set(nltk.wordpunct_tokenize(text))
-    file_tokens = exclude_stop_words(file_tokens)
-    file_tokens = exclude_punctuation(file_tokens)
-    file_tokens = exclude_trash(file_tokens)
-    file_tokens = exclude_numeric(file_tokens)
-    file_tokens = split_camel_case(file_tokens)
-    file_tokens = exclude_not_russion_or_english(file_tokens)
+    file_tokens = filter_tokens(file_tokens)
     all_tokens = all_tokens.union(file_tokens)
     print("{}/{}".format(count, len(archive.filelist)))
     count += 1
