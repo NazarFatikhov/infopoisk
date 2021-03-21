@@ -8,27 +8,29 @@ import zipfile
 import httplib2
 from bs4 import BeautifulSoup, SoupStrainer
 
-COUNT = 100
+COUNT = 150
 http = httplib2.Http()
+domen = "https://ru.wikipedia.org"
 
+def full_url(path):
+    return domen + path
 
-def handle_page(url, num):
+def handle_page(path, num):
     # Добавляем урл с номареом в виде "1 - https://ru.wikipedia.org/" в файл index.txt
-    with open("index.txt", "a") as index:
-        index.write("{} - {}\n".format(str(num), url))
+    with open("task_1/index.txt", "a") as index:
+        index.write("{} - {}\n".format(str(num), full_url(path)))
 
     # Добавляем страницу в архив
-    status, response = http.request(url)
-    with zipfile.ZipFile('archive.zip', 'a') as zipped_f:
+    status, response = http.request(full_url(path))
+    with zipfile.ZipFile('task_1/archive.zip', 'a') as zipped_f:
         zipped_f.writestr("file_{}.html".format(num), response)
 
-
-urls = ["https://ru.wikipedia.org/"]
+paths = ["/wiki/The_Rolling_Stones"]
 num = 0
 
 
 
-while (len(urls) < COUNT - 1):
+while (len(paths) < COUNT - 1):
     # Переходим по странице num
     # Если статус ОК:
     # 	Добавляем все ссылки в список, которых еще в списке нет
@@ -36,32 +38,34 @@ while (len(urls) < COUNT - 1):
     # 	Увеличиваем num
     # Иначе:
     #   удаляем страницу num со списка
-    status, response = http.request(urls[num])
+    status, response = http.request(full_url(paths[num]))
     if (status["status"] == "200"):
         for link in BeautifulSoup(response, "html.parser", parse_only=SoupStrainer('a')):
+            if len(paths) >= COUNT:
+                break
             if link.has_attr('href'):
-                url = str(link['href'])
-                if (url.startswith("http") and urls.count(url) == 0):
-                    urls.append(url)
-                    handle_page(url, num)
+                path = str(link['href'])
+                if (path.startswith("/wiki") and paths.count(path) == 0 and all(s not in path for s in [':', '.'])):
+                    paths.append(path)
+                    handle_page(path, num)
                     num += 1
     else:
-        urls.pop(num)
+        paths.pop(num)
 
 num += 1
 
-while num <= COUNT and num < len(urls):
+while num <= COUNT and num < len(paths):
     # Если статус ОК:
 	# 	обработка страницы
 	# 	Увеличиваем num
 	# Иначе:
 	# 	удаляем страницу num со списка
-    url = urls[num]
-    status, response = http.request(url)
+    path = paths[num]
+    status, response = http.request(full_url(path))
     if (status["status"] == "200"):
-        handle_page(url, num)
+        handle_page(path, num)
         num += 1
     else:
-        urls.pop(num)
+        paths.pop(num)
 
-print("{} обработаных страниц".format(num))
+print("{} обработаных страниц".format(num - 1))
