@@ -2,10 +2,17 @@ import zipfile
 import nltk
 import string
 import pymorphy2
+import re
 
 from bs4 import BeautifulSoup
 from nltk.corpus import stopwords
 from utils import camel_case_split
+
+def has_cyrillic(text):
+    return bool(re.search('[а-яА-ЯёЁ]', text))
+
+def has_english(text):
+    return bool(re.search('[a-zA-Z]', text))
 
 def split_camel_case(tokens):
     splited = []
@@ -37,6 +44,9 @@ def exclude_punctuation(tokens):
 def exclude_trash(tokens):
     trash = ['«', '»', '→', '·', '®', '▼', '–', '▸', 'x', 'X', '𗼇']
     return set([token for token in tokens if token not in trash])
+
+def exclude_not_russion_or_english(tokens):
+    return set([token for token in tokens if (has_cyrillic(token) or has_english(token))])
 
 def lemmatization(tokenization_result):
     morph = pymorphy2.MorphAnalyzer()
@@ -83,6 +93,7 @@ for file in archive.filelist:
     file_tokens = exclude_trash(file_tokens)
     file_tokens = exclude_numeric(file_tokens)
     file_tokens = split_camel_case(file_tokens)
+    file_tokens = exclude_not_russion_or_english(file_tokens)
     all_tokens = all_tokens.union(file_tokens)
     print("{}/{}".format(count, len(archive.filelist)))
     count += 1
