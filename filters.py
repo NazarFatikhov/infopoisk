@@ -21,7 +21,7 @@ def exclude_trash(tokens):
     return set([token for token in tokens if token not in trash])
 
 def exclude_not_russion_or_english(tokens):
-    return set([token for token in tokens if (has_cyrillic(token) or has_english(token))])
+    return set([token for token in tokens if (is_cyrillic(token) or is_english(token))])
 
 def filter_tokens(tokens):
     tokens = exclude_stop_words(tokens)

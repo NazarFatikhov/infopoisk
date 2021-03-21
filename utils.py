@@ -1,4 +1,5 @@
 import re
+import pymorphy2
 
 def camel_case_split(str):
     words = [[str[0]]]
@@ -25,8 +26,17 @@ def split_camel_case(tokens):
     tokens |= set(added)
     return tokens
 
-def has_cyrillic(text):
-    return bool(re.search('[а-яА-ЯёЁ]', text))
+def to_normal_form(word):
+    morph = pymorphy2.MorphAnalyzer()
+    p = morph.parse(word)[0]
+    if p.normalized.is_known:
+        normal_form = p.normal_form
+    else:
+        normal_form = word.lower()
+    return normal_form
 
-def has_english(text):
-    return bool(re.search('[a-zA-Z]', text))
+def is_cyrillic(text):
+    return bool(re.fullmatch('[а-яА-ЯёЁ]+', text))
+
+def is_english(text):
+    return bool(re.fullmatch('[a-zA-Z]+', text))
