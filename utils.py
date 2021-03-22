@@ -1,6 +1,8 @@
 import re
 import pymorphy2
 
+morph = pymorphy2.MorphAnalyzer()
+
 def camel_case_split(str):
     words = [[str[0]]]
 
@@ -27,7 +29,6 @@ def split_camel_case(tokens):
     return tokens
 
 def to_normal_form(word):
-    morph = pymorphy2.MorphAnalyzer()
     p = morph.parse(word)[0]
     if p.normalized.is_known:
         normal_form = p.normal_form
